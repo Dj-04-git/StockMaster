@@ -1,18 +1,11 @@
-const mongoose = require('mongoose');
+const { Sequelize } = require('sequelize');
+const path = require('path');
 
-
-const connectDB = async () => {
-try {
-await mongoose.connect(process.env.MONGO_URI, {
-useNewUrlParser: true,
-useUnifiedTopology: true,
+// SQLite database stored locally
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: path.join(__dirname, 'database.sqlite'),
+  logging: false,
 });
-console.log('MongoDB connected');
-} catch (err) {
-console.error(err.message);
-process.exit(1);
-}
-};
 
-
-module.exports = connectDB;
+module.exports = sequelize;

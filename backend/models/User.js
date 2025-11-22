@@ -1,43 +1,35 @@
-const mongoose = require('mongoose');
+const { DataTypes, Model } = require('sequelize');
 const bcrypt = require('bcryptjs');
+const sequelize = require('../config/db'); ;
 
+class User extends Model {
+  async comparePassword(candidate) {
+    if (!this.password) return false;
+    return await bcrypt.compare(candidate, this.password);
+  }
+}
 
-const OTPSchema = new mongoose.Schema({
-code: String, 
-expiresAt: Date
+User.init({
+  loginId: { type: DataTypes.STRING, unique: true, allowNull: false },
+  email: { type: DataTypes.STRING, unique: true, allowNull: false },
+  password: { type: DataTypes.STRING },
+  googleId: { type: DataTypes.STRING },
+  isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
+  otpCode: { type: DataTypes.STRING },
+  otpExpiresAt: { type: DataTypes.DATE },
+  resetToken: { type: DataTypes.STRING },
+  resetTokenExpiresAt: { type: DataTypes.DATE }
+}, {
+  sequelize,
+  modelName: 'User',
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
 });
 
-
-const ResetTokenSchema = new mongoose.Schema({
-token: String, 
-expiresAt: Date
-});
-
-
-const UserSchema = new mongoose.Schema({
-loginId: { type: String, unique: true, required: true },
-email: { type: String, required: true, unique: true },
-password: { type: String },
-googleId: { type: String },
-isVerified: { type: Boolean, default: false },
-otp: OTPSchema,
-resetToken: ResetTokenSchema,
-createdAt: { type: Date, default: Date.now }
-});
-
-
-UserSchema.pre('save', async function (next) {
-if (!this.isModified('password')) return next();
-const salt = await bcrypt.genSalt(10);
-this.password = await bcrypt.hash(this.password, salt);
-next();
-});
-
-
-UserSchema.methods.comparePassword = async function (candidate) {
-if (!this.password) return false;
-return await bcrypt.compare(candidate, this.password);
-};
-
-
-module.exports = mongoose.model('User', UserSchema);
+module.exports = User;

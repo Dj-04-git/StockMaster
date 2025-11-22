@@ -6,7 +6,7 @@ const ctrl = require('../controllers/authController');
 // Signup (create user + send OTP)
 router.post('/signup', ctrl.signup);
 // Verify OTP
-router.post('/verify-otp', ctrl.verifyOtp);
+router.get('/verify-otp-link', ctrl.verifyOtpLink);
 // Resend OTP
 router.post('/resend-otp', ctrl.resendOtp);
 
