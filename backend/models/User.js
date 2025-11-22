@@ -1,39 +1,35 @@
-const db = require("../config/db");
-const bcrypt = require("bcryptjs");
+const { DataTypes, Model } = require('sequelize');
+const bcrypt = require('bcryptjs');
+const sequelize = require('../config/db'); ;
 
-module.exports = {
-  createUser: (loginId, email, passwordHash) => {
-    return new Promise((resolve, reject) => {
-      const sql = `
-        INSERT INTO Users (login_id, email, password_hash)
-        VALUES (?, ?, ?)
-      `;
-      db.run(sql, [loginId, email, passwordHash], function (err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID });
-      });
-    });
-  },
+class User extends Model {
+  async comparePassword(candidate) {
+    if (!this.password) return false;
+    return await bcrypt.compare(candidate, this.password);
+  }
+}
 
-  findByEmailOrLoginId: (emailOrLoginId) => {
-    return new Promise((resolve, reject) => {
-      db.get(
-        `SELECT * FROM Users WHERE email = ? OR login_id = ?`,
-        [emailOrLoginId, emailOrLoginId],
-        (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        }
-      );
-    });
-  },
+User.init({
+  loginId: { type: DataTypes.STRING, unique: true, allowNull: false },
+  email: { type: DataTypes.STRING, unique: true, allowNull: false },
+  password: { type: DataTypes.STRING },
+  googleId: { type: DataTypes.STRING },
+  isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
+  otpCode: { type: DataTypes.STRING },
+  otpExpiresAt: { type: DataTypes.DATE },
+  resetToken: { type: DataTypes.STRING },
+  resetTokenExpiresAt: { type: DataTypes.DATE }
+}, {
+  sequelize,
+  modelName: 'User',
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
+  }
+});
 
-  findAll: () => {
-    return new Promise((resolve, reject) => {
-      db.all(`SELECT id, login_id, email, role FROM Users`, [], (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
-  },
-};
+module.exports = User;
