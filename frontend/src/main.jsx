@@ -23,7 +23,8 @@ createRoot(document.getElementById('root')).render(
     <Routes>
       {/* Public Routes (No Navbar/Sidebar) */}
       <Route path="login" element={<Login />} />
-      <Route path="signup" element={<Signup />} />
+      <Route path="register" element={<Signup />} />
+      <Route path="forgot-page" element={<Signup />} />
 
       {/* Protected App Routes (With Layout) */}
       <Route element={<Layout />}>

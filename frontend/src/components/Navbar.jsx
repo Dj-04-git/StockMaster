@@ -29,6 +29,12 @@ export default function Navbar() {
           ))}
         </ul>
       </div>
+      <div className="flex-none">
+        <ul className="menu menu-horizontal px-1">
+          <li><Link to='/login'>Login</Link></li>
+          <li><Link to='/register'>Register</Link></li>
+        </ul>
+      </div>
     </div>
   );
 }
