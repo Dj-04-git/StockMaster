@@ -1,43 +1,39 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const db = require("../config/db");
+const bcrypt = require("bcryptjs");
 
+module.exports = {
+  createUser: (loginId, email, passwordHash) => {
+    return new Promise((resolve, reject) => {
+      const sql = `
+        INSERT INTO Users (login_id, email, password_hash)
+        VALUES (?, ?, ?)
+      `;
+      db.run(sql, [loginId, email, passwordHash], function (err) {
+        if (err) reject(err);
+        else resolve({ id: this.lastID });
+      });
+    });
+  },
 
-const OTPSchema = new mongoose.Schema({
-code: String, 
-expiresAt: Date
-});
+  findByEmailOrLoginId: (emailOrLoginId) => {
+    return new Promise((resolve, reject) => {
+      db.get(
+        `SELECT * FROM Users WHERE email = ? OR login_id = ?`,
+        [emailOrLoginId, emailOrLoginId],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+  },
 
-
-const ResetTokenSchema = new mongoose.Schema({
-token: String, 
-expiresAt: Date
-});
-
-
-const UserSchema = new mongoose.Schema({
-loginId: { type: String, unique: true, required: true },
-email: { type: String, required: true, unique: true },
-password: { type: String },
-googleId: { type: String },
-isVerified: { type: Boolean, default: false },
-otp: OTPSchema,
-resetToken: ResetTokenSchema,
-createdAt: { type: Date, default: Date.now }
-});
-
-
-UserSchema.pre('save', async function (next) {
-if (!this.isModified('password')) return next();
-const salt = await bcrypt.genSalt(10);
-this.password = await bcrypt.hash(this.password, salt);
-next();
-});
-
-
-UserSchema.methods.comparePassword = async function (candidate) {
-if (!this.password) return false;
-return await bcrypt.compare(candidate, this.password);
+  findAll: () => {
+    return new Promise((resolve, reject) => {
+      db.all(`SELECT id, login_id, email, role FROM Users`, [], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+  },
 };
-
-
-module.exports = mongoose.model('User', UserSchema);
