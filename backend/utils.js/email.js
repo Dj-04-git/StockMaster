@@ -26,7 +26,8 @@ async function sendMail({ to, subject, html, text }) {
 }
 
 async function sendOtpEmail({ email, code }) {
-  const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-otp?email=${email}&code=${code}`;
+const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`;
+
 
   const html = `
     <p>Hello,</p>

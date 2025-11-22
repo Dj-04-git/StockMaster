@@ -14,9 +14,13 @@ function randomOTP() {
 exports.signup = async (req, res) => {
   try {
     const { email, loginId, password } = req.body;
+    console.log('Signup request body:', req.body);
 
     const existing = await User.findOne({ where: { email } });
-    if (existing) return res.status(400).json({ msg: "Email already exists" });
+    if (existing) {
+      console.log('Email already exists:', email);
+      return res.status(400).json({ msg: "Email already exists" });
+    }
 
     const code = randomOTP();
     const expiresAt = new Date(Date.now() + (Number(process.env.OTP_EXPIRES_MINUTES || 10) * 60 * 1000));
@@ -30,17 +34,19 @@ exports.signup = async (req, res) => {
       isVerified: false
     });
 
-    // Send OTP email with link
+    console.log('User created:', user.email);
+
+    // Send OTP email
     await sendOtpEmail({ email, code });
 
     res.json({ msg: "OTP sent" });
   } catch (err) {
-    console.error(err);
+    console.error('Error in signup:', err);
     res.status(500).json({ msg: "Error creating user" });
   }
 };
 
-// ---------------------- VERIFY OTP LINK ----------------------
+
 exports.verifyOtpLink = async (req, res) => {
   try {
     const { email, code } = req.query;
@@ -51,18 +57,19 @@ exports.verifyOtpLink = async (req, res) => {
     if (new Date() > user.otpExpiresAt) return res.status(400).send("OTP expired");
     if (user.otpCode !== code) return res.status(400).send("Invalid OTP");
 
+    // Mark verified
     user.isVerified = true;
     user.otpCode = null;
     user.otpExpiresAt = null;
     await user.save();
 
-    res.send("Email verified successfully! You can now login.");
+    return res.redirect("http://localhost:5173/dashboard");
+
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
   }
 };
-
 // ---------------------- RESEND OTP ----------------------
 exports.resendOtp = async (req, res) => {
   try {
