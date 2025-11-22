@@ -2,27 +2,21 @@ const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/authController');
 
-
-// Signup (create user + send OTP)
+// Signup → create user in SQLite
 router.post('/signup', ctrl.signup);
+<<<<<<< shreya/branch
 // Verify OTP
 router.get('/verify-otp-link', ctrl.verifyOtpLink);
 // Resend OTP
 router.post('/resend-otp', ctrl.resendOtp);
 
+=======
+>>>>>>> main
 
-// Login email/password
+// Login → email/loginId + password
 router.post('/login', ctrl.login);
 
-
-// Google OAuth - simple flow: backend receives id_token from frontend OR full redirect flow
-router.post('/google-login', ctrl.googleLogin);
-
-
-// Forgot password - send reset link
-router.post('/forgot-password', ctrl.forgotPassword);
-// Reset password
-router.post('/reset-password', ctrl.resetPassword);
-
+// Get all users (admin panel)
+router.get('/users', ctrl.getUsers);
 
 module.exports = router;

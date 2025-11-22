@@ -1,3 +1,4 @@
+<<<<<<< shreya/branch
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -23,3 +24,17 @@ sequelize.sync({ alter: true })   // creates tables if not exist & updates colum
   .catch(err => {
     console.error("Failed to sync database:", err);
   });
+=======
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+app.use("/api/auth", require("./routes/auth"));
+
+app.listen(5000, () => console.log("Server running on port 5000"));
+>>>>>>> main

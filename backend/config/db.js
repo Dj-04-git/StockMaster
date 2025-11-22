@@ -1,11 +1,12 @@
-const { Sequelize } = require('sequelize');
-const path = require('path');
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
 
-// SQLite database stored locally
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: path.join(__dirname, 'database.sqlite'),
-  logging: false,
-});
+const db = new sqlite3.Database(
+  path.join(__dirname, "../db/stockmaster.db"),
+  (err) => {
+    if (err) console.error("SQLite Error:", err);
+    else console.log("SQLite connected successfully");
+  }
+);
 
-module.exports = sequelize;
+module.exports = db;
